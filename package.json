@@ -1,0 +1,49 @@
+{
+  "name": "fund",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.4",
+    "@mui/material": "^6.4.4",
+    "@mui/styled-engine-sc": "^6.4.3",
+    "axios": "^1.7.9",
+    "buffer": "^6.0.3",
+    "dotenv": "^16.4.7",
+    "form-data": "^4.0.2",
+    "framer-motion": "^12.4.10",
+    "fs": "^0.0.1-security",
+    "ipfs-http-client": "^50.1.2",
+    "next": "15.1.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-loader-spinner": "^6.1.6",
+    "react-toastify": "^11.0.3",
+    "styled-components": "^6.1.15",
+    "tostify": "^0.0.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-styled-components": "^2.1.4",
+    "chai": "^5.2.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.1.7",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.7.2",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
