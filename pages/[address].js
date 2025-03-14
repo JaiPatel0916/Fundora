@@ -374,19 +374,96 @@ const Donated = styled.div`
 const LiveDonation = styled.div`
   height: 65%;
   overflow-y: auto;
+  padding: 10px;
+  border-radius: 12px;
+  background: ${(props) => props.theme.mode === 'dark'
+    ? "rgba(50, 50, 50, 0.9)"
+    : "rgba(230, 230, 230, 0.9)"};
+  box-shadow: ${(props) => props.theme.mode === 'dark'
+    ? "0px 4px 10px rgba(255, 255, 255, 0.1)"
+    : "0px 4px 10px rgba(0, 0, 0, 0.1)"};
+  transition: all 0.3s ease-in-out;
+
+  & > * {  /* Apply effect to each direct child (each row) */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin: 6px 0;
+    border-radius: 12px;
+    background: ${(props) => props.theme.mode === 'dark'
+    ? "rgba(255, 255, 255, 0.05)"
+    : "rgba(0, 0, 0, 0.05)"};
+    font-weight: bold;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0px 6px 14px ${(props) => props.theme.mode === 'dark'
+    ? "rgba(255, 138, 0, 0.3)"
+    : "rgba(0, 123, 255, 0.3)"};
+      background: ${(props) => props.theme.mode === 'dark'
+    ? "rgba(255, 138, 0, 0.15)"
+    : "rgba(0, 123, 255, 0.15)"};
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${(props) => props.theme.mode === 'dark'
+    ? "rgba(255, 138, 0, 0.7)"
+    : "rgba(0, 123, 255, 0.7)"};
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
+
 const MyDonation = styled.div`
   height: 35%;
   overflow-y: auto;
+
+  div {
+    padding: 5px;
+    margin: 5px 0;
+    border-radius: 8px;
+    background-color: ${(props) => props.theme.bgSubDiv};
+    color: ${(props) => props.theme.color};
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+
+    &:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0px 4px 12px rgba(255, 255, 255, 0.1);
+    }
+  }
 `;
+
 const DonationTitle = styled.div`
-  font-family: "Roboto";
-  font-size: x-small;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
   text-transform: uppercase;
-  padding: 4px;
+  padding: 8px 12px;
   text-align: center;
-  background-color: #4cd137;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  color: #fff;
+  background: linear-gradient(90deg, #4cd137, #2ecc71);
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(76, 209, 55, 0.3);
+  transition: all 0.3s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0px 6px 15px rgba(76, 209, 55, 0.5);
+    background: linear-gradient(90deg, #2ecc71, #4cd137);
+  }
 `;
+
 const Donation = styled.div`
   display: flex;
   justify-content: space-between;

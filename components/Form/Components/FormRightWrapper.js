@@ -119,15 +119,45 @@ const FormRow = styled.div`
 `;
 
 const Input = styled.input`
-  padding:15px;
-  background-color:${(props) => props.theme.bgDiv};
-  color:${(props) => props.theme.color};
-  margin-top:4px;
-  border:none;
-  border-radius:8px;
-  outline:none;
-  font-size:large;
-  width:100%;
+  padding: 10px 10px;
+  width: 100%;
+  font-size: 16px;
+  font-family: 'Poppins', sans-serif;
+  background: ${(props) =>
+    props.theme.mode === 'dark'
+      ? "linear-gradient(135deg, #1E1E2F, #2A2A3A)"
+      : "linear-gradient(135deg, #F5F5F5, #FFFFFF)"};
+  color: ${(props) => props.theme.color};
+  border: 2px solid transparent;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+
+  /* On hover, a subtle glow appears */
+  &:hover {
+    box-shadow: 0 0 8px 2px
+      ${(props) =>
+    props.theme.mode === 'dark'
+      ? "rgba(0, 234, 255, 0.3)"
+      : "rgba(0, 123, 255, 0.3)"};
+  }
+
+  /* On focus, the glow intensifies with a colored border */
+  &:focus {
+    border-color: ${(props) =>
+    props.theme.mode === 'dark' ? "#00eaff" : "#007bff"};
+    box-shadow: 0 0 12px 3px
+      ${(props) =>
+    props.theme.mode === 'dark'
+      ? "rgba(0, 234, 255, 0.7)"
+      : "rgba(0, 123, 255, 0.7)"};
+  }
+
+  /* Placeholder styling for better readability */
+  &::placeholder {
+    color: ${(props) => (props.theme.mode === 'dark' ? "#aaa" : "#666")};
+  }
 `;
 
 const RowFirstInput = styled.div`
@@ -143,15 +173,32 @@ const RowSecondInput = styled.div`
 `;
 
 const Select = styled.select`
-  padding:15px;
-  background-color:${(props) => props.theme.bgDiv};
-  color:${(props) => props.theme.color};
-  margin-top:4px;
-  border:none;
-  border-radius:8px;
-  outline:none;
-  font-size:large;
-  width:100%;
+  padding: 14px 18px;
+  background: ${(props) => props.theme.bgDiv};
+  color: ${(props) => props.theme.color};
+  margin-top: 6px;
+  border: 2px solid ${(props) => props.theme.bgSubDiv};
+  border-radius: 10px;
+  outline: none;
+  font-size: 16px;
+  width: 100%;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  box-shadow: inset 0px 0px 8px rgba(255, 255, 255, 0.1);
+
+  &:hover {
+    border-color: ${(props) => props.theme.mode === 'dark' ? '#ff8a00' : '#007bff'};
+    background: linear-gradient(135deg, ${(props) => props.theme.bgDiv}, ${(props) => props.theme.bgSubDiv});
+    box-shadow: 0px 4px 10px ${(props) => props.theme.mode === 'dark' ? 'rgba(255, 138, 0, 0.3)' : 'rgba(0, 123, 255, 0.3)'};
+  }
+
+  &:focus {
+    border-color: ${(props) => props.theme.mode === 'dark' ? '#ff8a00' : '#007bff'};
+    box-shadow: 0px 0px 12px ${(props) => props.theme.mode === 'dark' ? 'rgba(255, 138, 0, 0.8)' : 'rgba(0, 123, 255, 0.8)'};
+  }
 `;
 
 const Image = styled.input`
@@ -176,17 +223,42 @@ const Image = styled.input`
 
 const Button = styled.button`
   display: flex;
-  justify-content:center;
-  width:100%;
-  padding:15px;
-  color:white;
-  background-color:#00b712;
-  background-image: linear-gradient(180deg, #00b712 0%, #5aff15 80%);
-  border:none;
-  margin-top:30px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: ${(props) => props.theme.mode === 'dark' ? "#f8f9fa" : "#222"};
+  background: ${(props) => props.theme.mode === 'dark' 
+    ? "linear-gradient(135deg, #2E8B57, #3CB371)" 
+    : "linear-gradient(135deg, #006D77, #83C5BE)"};
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight:bold;
-  font-size:large;
+  transition: all 0.3s ease-in-out;
+  box-shadow: ${(props) => props.theme.mode === 'dark' 
+    ? "0px 4px 12px rgba(46, 139, 87, 0.3)" 
+    : "0px 4px 12px rgba(0, 109, 119, 0.3)"};
+
+  margin-bottom: 15px;  /* 🔥 Adds 15px spacing BELOW each button */
+
+  &:hover {
+    background: ${(props) => props.theme.mode === 'dark' 
+      ? "linear-gradient(135deg, #3CB371, #2E8B57)" 
+      : "linear-gradient(135deg, #83C5BE, #006D77)"};
+    box-shadow: ${(props) => props.theme.mode === 'dark' 
+      ? "0px 6px 18px rgba(46, 139, 87, 0.5)" 
+      : "0px 6px 18px rgba(0, 109, 119, 0.5)"};
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 `;
+
 
 export default FormRightWrapper;
