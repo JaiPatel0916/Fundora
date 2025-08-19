@@ -1,7 +1,7 @@
 const light = {
     color: "#000",
-    bgColor: '#efe7fd',
-    bgImage: 'linear-gradient(180deg, #efe7fd 0%, #bdccf7 60%)',
+    bgColor: 'rgb(106, 156, 197)',
+    // bgImage: 'linear-gradient(180deg, #efe7fd 0%, #bdccf7 60%)',
     bgDiv: '#fff',
     bgSubDiv: '#efe7fd'
 }

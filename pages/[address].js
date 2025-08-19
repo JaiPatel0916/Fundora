@@ -1,76 +1,155 @@
 import styled from "styled-components";
 import Image from "next/image";
-import {ethers} from 'ethers';
+import { ethers } from 'ethers';
 import CampaignFactory from '../artifacts/contracts/Campaign.sol/CampaignFactory.json';
 import Campaign from '../artifacts/contracts/Campaign.sol/Campaign.json';
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
-
-export default function Detail({Data, DonationsData}) {
+export default function Detail({ Data = {}, DonationsData = [] }) {
   const [mydonations, setMydonations] = useState([]);
   const [story, setStory] = useState('');
-  const [amount, setAmount] = useState();
+  const [amount, setAmount] = useState('');
   const [change, setChange] = useState(false);
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [newFeedback, setNewFeedback] = useState('');
+  const [userAddress, setUserAddress] = useState('');
+  const [isOwner, setIsOwner] = useState(false);  // Track if the user is the owner
+
+  const fetchFeedbacks = async () => {
+    if (!Data.address) return;
+    try {
+      const res = await fetch(`/api/feedback/${Data.address}`);
+      const result = await res.json();
+      if (result.success) setFeedbacks(result.feedbacks);
+    } catch (err) {
+      console.error("Failed to fetch feedback:", err);
+    }
+  };
 
   useEffect(() => {
     const Request = async () => {
-      let storyData;
-      
+      if (!Data.address) return;
+
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const Web3provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = Web3provider.getSigner();
       const Address = await signer.getAddress();
+      setUserAddress(Address);
 
-      const provider = new ethers.providers.JsonRpcProvider(
-        process.env.NEXT_PUBLIC_RPC_URL
-      );
-    
-      const contract = new ethers.Contract(
-        Data.address,
-        Campaign.abi,
-        provider
-      );
+      // Check if the user is the campaign owner
+      if (Address.toLowerCase() === Data.owner.toLowerCase()) {
+        setIsOwner(true);
+      } else {
+        setIsOwner(false);
+      }
 
-      fetch('https://crowdfunding.infura-ipfs.io/ipfs/' + Data.storyUrl)
-            .then(res => res.text()).then(data => storyData = data);
+      const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
+      const contract = new ethers.Contract(Data.address, Campaign.abi, provider);
+
+      const response = await fetch(`https://crowdfunding.infura-ipfs.io/ipfs/${Data.storyUrl}`);
+      const data = await response.text();
+      setStory(data);
 
       const MyDonations = contract.filters.donated(Address);
       const MyAllDonations = await contract.queryFilter(MyDonations);
 
-      setMydonations(MyAllDonations.map((e) => {
-        return {
-          donar: e.args.donar,
-          amount: ethers.utils.formatEther(e.args.amount),
-          timestamp : parseInt(e.args.timestamp)
-        }
-      }));
-
-      setStory(storyData);
-    }
+      setMydonations(MyAllDonations.map((e) => ({
+        donar: e.args.donar,
+        amount: ethers.utils.formatEther(e.args.amount),
+        timestamp: parseInt(e.args.timestamp)
+      })));
+    };
 
     Request();
-  }, [change])
+  }, [Data, change]);
 
+  useEffect(() => {
+    fetchFeedbacks();
+  }, [Data]);
 
   const DonateFunds = async () => {
     try {
       await window.ethereum.request({ method: 'eth_requestAccounts' });
+
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      
       const contract = new ethers.Contract(Data.address, Campaign.abi, signer);
-      
-      const transaction = await contract.donate({value: ethers.utils.parseEther(amount)});
+
+      if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        toast.error('❌ Enter a valid amount greater than 0.');
+        return;
+      }
+
+      const parsedAmount = ethers.utils.parseEther(amount);
+
+      // Optional: show logs
+      console.log("Parsed amount:", parsedAmount.toString());
+
+      const received = await contract.receivedAmount();
+      const required = await contract.requiredAmount();
+
+      if (received.gte(required)) {
+        toast('❌ Donations are already full for this campaign.');
+        return;
+      }
+
+      const toastId = toast.loading('⏳ Processing your donation...');
+
+      const transaction = await contract.donate({
+        value: parsedAmount,
+      });
+
       await transaction.wait();
 
-      setChange(true);
-      setAmount('');
-      
-  } catch (error) {
-      console.log(error);
-  }
+      toast.success('✅ Donation successful!', {
+        id: toastId,
+      });
 
-  }
+      setChange(!change);
+      setAmount('');
+    } catch (error) {
+      console.error("Error during donation:", error);
+      toast.dismiss(); // ❗ Closes loading toast
+      toast.error('⚠ Donation failed or cancelled.');
+    }
+  };
+  const submitFeedback = async () => {
+    if (!newFeedback.trim()) {
+      return alert("Feedback can't be empty.");
+    }
+
+    console.log("Sending feedback:", {
+      campaignAddress: Data.address,
+      userAddress,
+      message: newFeedback,
+    });
+
+    try {
+      const res = await fetch("/api/feedback/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignAddress: Data.address,
+          userAddress: userAddress,
+          message: newFeedback,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        alert("✅ Feedback submitted!");
+        setFeedbacks([result.feedback, ...feedbacks]);
+        setNewFeedback('');
+      } else {
+        throw new Error(result.message || "Unknown error from server.");
+      }
+    } catch (err) {
+      alert("❌ Error submitting feedback.");
+      console.error("Feedback submission error:", err);
+    }
+  };
 
   return (
     <DetailWrapper>
@@ -79,21 +158,19 @@ export default function Detail({Data, DonationsData}) {
           <Image
             alt="crowdfunding dapp"
             layout="fill"
-            src={
-              "https://crowdfunding.infura-ipfs.io/ipfs/" + Data.image
-            }
+            src={`https://crowdfunding.infura-ipfs.io/ipfs/${Data.image}`}
           />
         </ImageSection>
-        <Text>
-          {story}
-        </Text>
+        <Text>{story}</Text>
       </LeftContainer>
+
       <RightContainer>
         <Title>{Data.title}</Title>
         <DonateSection>
           <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" placeholder="Enter Amount To Donate" />
           <Donate onClick={DonateFunds}>Donate</Donate>
         </DonateSection>
+
         <FundsData>
           <Funds>
             <FundText>Required Amount</FundText>
@@ -104,74 +181,80 @@ export default function Detail({Data, DonationsData}) {
             <FundText>{Data.receivedAmount} Matic</FundText>
           </Funds>
         </FundsData>
+
         <Donated>
           <LiveDonation>
             <DonationTitle>Recent Donation</DonationTitle>
-            {DonationsData.map((e) => {
-              return (
-                <Donation key={e.timestamp}>
-                <DonationData>{e.donar.slice(0,6)}...{e.donar.slice(39)}</DonationData>
+            {DonationsData.map((e) => (
+              <Donation key={e.timestamp}>
+                <DonationData>{e.donar.slice(0, 6)}...{e.donar.slice(39)}</DonationData>
                 <DonationData>{e.amount} Matic</DonationData>
                 <DonationData>{new Date(e.timestamp * 1000).toLocaleString()}</DonationData>
               </Donation>
-              )
-            })
-            }
+            ))}
           </LiveDonation>
+
           <MyDonation>
             <DonationTitle>My Past Donation</DonationTitle>
-            {mydonations.map((e) => {
-              return (
-                <Donation key={e.timestamp}>
-                <DonationData>{e.donar.slice(0,6)}...{e.donar.slice(39)}</DonationData>
+            {mydonations.map((e) => (
+              <Donation key={e.timestamp}>
+                <DonationData>{e.donar.slice(0, 6)}...{e.donar.slice(39)}</DonationData>
                 <DonationData>{e.amount} Matic</DonationData>
                 <DonationData>{new Date(e.timestamp * 1000).toLocaleString()}</DonationData>
               </Donation>
-              )
-            })
-            }
+            ))}
           </MyDonation>
         </Donated>
+        <br></br><br></br>
+
+        {/* Feedback section */}
+        <DonationTitle>Feedbacks</DonationTitle>
+        <FeedbackSection>
+  {/* Show all feedbacks to both the owner and the contributors */}
+
+  {/* If the user is the owner, show the feedback input and submit button */}
+  {isOwner && (
+    <>
+      <FeedbackInput
+        value={newFeedback}
+        onChange={(e) => setNewFeedback(e.target.value)}
+        placeholder="Write your feedback..."
+      />
+      <Donate onClick={submitFeedback}>Submit</Donate>
+    </>
+  )}
+    {feedbacks.map((fb, i) => (
+    <FeedbackItem key={i}>
+      <p><b>{fb.userAddress.slice(0, 6)}...{fb.userAddress.slice(-4)}</b></p>
+      <p>{fb.message}</p>
+    </FeedbackItem>
+  ))}
+</FeedbackSection>
+
       </RightContainer>
     </DetailWrapper>
   );
 }
 
-
+// Static Paths
 export async function getStaticPaths() {
-  const provider = new ethers.providers.JsonRpcProvider(
-    process.env.NEXT_PUBLIC_RPC_URL
-  );
-
-  const contract = new ethers.Contract(
-    process.env.NEXT_PUBLIC_ADDRESS,
-    CampaignFactory.abi,
-    provider
-  );
-
+  const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
+  const contract = new ethers.Contract(process.env.NEXT_PUBLIC_ADDRESS, CampaignFactory.abi, provider);
   const getAllCampaigns = contract.filters.campaignCreated();
   const AllCampaigns = await contract.queryFilter(getAllCampaigns);
 
   return {
     paths: AllCampaigns.map((e) => ({
-        params: {
-          address: e.args.campaignAddress.toString(),
-        }
+      params: { address: e.args.campaignAddress.toString() }
     })),
     fallback: "blocking"
-  }
+  };
 }
 
+// Static Props
 export async function getStaticProps(context) {
-  const provider = new ethers.providers.JsonRpcProvider(
-    process.env.NEXT_PUBLIC_RPC_URL
-  );
-
-  const contract = new ethers.Contract(
-    context.params.address,
-    Campaign.abi,
-    provider
-  );
+  const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
+  const contract = new ethers.Contract(context.params.address, Campaign.abi, provider);
 
   const title = await contract.title();
   const requiredAmount = await contract.requiredAmount();
@@ -183,23 +266,21 @@ export async function getStaticProps(context) {
   const Donations = contract.filters.donated();
   const AllDonations = await contract.queryFilter(Donations);
 
-
   const Data = {
-      address: context.params.address,
-      title, 
-      requiredAmount: ethers.utils.formatEther(requiredAmount), 
-      image, 
-      receivedAmount: ethers.utils.formatEther(receivedAmount), 
-      storyUrl, 
-      owner,
-  }
+    address: context.params.address,
+    title,
+    requiredAmount: ethers.utils.formatEther(requiredAmount),
+    image,
+    receivedAmount: ethers.utils.formatEther(receivedAmount),
+    storyUrl,
+    owner,
+  };
 
-  const DonationsData =  AllDonations.map((e) => {
-    return {
-      donar: e.args.donar,
-      amount: ethers.utils.formatEther(e.args.amount),
-      timestamp : parseInt(e.args.timestamp)
-  }});
+  const DonationsData = AllDonations.map((e) => ({
+    donar: e.args.donar,
+    amount: ethers.utils.formatEther(e.args.amount),
+    timestamp: parseInt(e.args.timestamp)
+  }));
 
   return {
     props: {
@@ -207,12 +288,38 @@ export async function getStaticProps(context) {
       DonationsData
     },
     revalidate: 10
-  }
-
-
+  };
 }
 
+// Add your styled components below (DetailWrapper, RightContainer, etc.)
 
+// Keep getStaticPaths and getStaticProps same as before
+const FeedbackSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+`;
+
+const FeedbackInput = styled.textarea`
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  resize: vertical;
+  background-color: ${({ theme }) => theme.bgSecondary || "#f9f9f9"};
+  color: ${({ theme }) => theme.text || "#000"};
+`;
+
+const FeedbackItem = styled.div`
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: ${({ theme }) => theme.bgSecondary || "#1a1a1a"};
+  color: ${({ theme }) => theme.text || "#fff"};
+`;
 
 
 const DetailWrapper = styled.div`
@@ -477,4 +584,4 @@ const DonationData = styled.p`
   font-size: large;
   margin: 0;
   padding: 0;
-`; 
+`;

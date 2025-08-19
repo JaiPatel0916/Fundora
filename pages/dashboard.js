@@ -9,6 +9,8 @@ import CampaignFactory from '../artifacts/contracts/Campaign.sol/CampaignFactory
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+import Footer from '../components/layout/Footer';
+
 export default function Dashboard() {
   const [campaignsData, setCampaignsData] = useState([]);
 
@@ -22,25 +24,25 @@ export default function Dashboard() {
       const provider = new ethers.providers.JsonRpcProvider(
         process.env.NEXT_PUBLIC_RPC_URL
       );
-  
+
       const contract = new ethers.Contract(
         process.env.NEXT_PUBLIC_ADDRESS,
         CampaignFactory.abi,
         provider
       );
-  
+
       const getAllCampaigns = contract.filters.campaignCreated(null, null, Address);
       const AllCampaigns = await contract.queryFilter(getAllCampaigns);
       const AllData = AllCampaigns.map((e) => {
-      return {
-        title: e.args.title,
-        image: e.args.imgURI,
-        owner: e.args.owner,
-        timeStamp: parseInt(e.args.timestamp),
-        amount: ethers.utils.formatEther(e.args.requiredAmount),
-        address: e.args.campaignAddress
-      }
-      })  
+        return {
+          title: e.args.title,
+          image: e.args.imgURI,
+          owner: e.args.owner,
+          timeStamp: parseInt(e.args.timestamp),
+          amount: ethers.utils.formatEther(e.args.requiredAmount),
+          address: e.args.campaignAddress
+        }
+      })
       setCampaignsData(AllData)
     }
     Request();
@@ -51,46 +53,47 @@ export default function Dashboard() {
 
       {/* Cards Container */}
       <CardsWrapper>
-       
 
-      {/* Card */}
-      {campaignsData.map((e) => {
-        return (
-          <Card key={e.title}>
-          <CardImg>
-            <Image 
-              alt="crowdfunding dapp"
-              layout='fill' 
-              src={"https://crowdfunding.infura-ipfs.io/ipfs/" + e.image} 
-            />
-          </CardImg>
-          <Title>
-            {e.title}
-          </Title>
-          <CardData>
-            <Text>Owner<AccountBoxIcon /></Text> 
-            <Text>{e.owner.slice(0,6)}...{e.owner.slice(39)}</Text>
-          </CardData>
-          <CardData>
-            <Text>Amount<PaidIcon /></Text> 
-            <Text>{e.amount} Matic</Text>
-          </CardData>
-          <CardData>
-            <Text><EventIcon /></Text>
-            <Text  suppressHydrationWarning>{new Date(e.timeStamp * 1000).toLocaleString()}</Text>
-          </CardData>
-          <Link passHref href={'/' + e.address}>
-          <Button>
-            Go to Campaign
-          </Button>
-          </Link>
-        </Card>
-        )
-      })}
-    
+
         {/* Card */}
-    
+        {campaignsData.map((e) => {
+          return (
+            <Card key={e.title}>
+              <CardImg>
+                <Image
+                  alt="crowdfunding dapp"
+                  layout='fill'
+                  src={"https://crowdfunding.infura-ipfs.io/ipfs/" + e.image}
+                />
+              </CardImg>
+              <Title>
+                {e.title}
+              </Title>
+              <CardData>
+                <Text>Owner<AccountBoxIcon /></Text>
+                <Text>{e.owner.slice(0, 6)}...{e.owner.slice(39)}</Text>
+              </CardData>
+              <CardData>
+                <Text>Amount<PaidIcon /></Text>
+                <Text>{e.amount} Matic</Text>
+              </CardData>
+              <CardData>
+                <Text><EventIcon /></Text>
+                <Text suppressHydrationWarning>{new Date(e.timeStamp * 1000).toLocaleString()}</Text>
+              </CardData>
+              <Link passHref href={'/' + e.address}>
+                <Button>
+                  Go to Campaign
+                </Button>
+              </Link>
+            </Card>
+          )
+        })}
+
+        {/* Card */}
+
       </CardsWrapper>
+      <Footer/>
     </HomeWrapper>
   )
 }
