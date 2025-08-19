@@ -88,6 +88,8 @@ export default function Index({ AllData, HealthData, EducationData, AnimalData }
       </CardsWrapper>
       <VideoHero />
       <FAQSection />
+    
+
       <Footer />
       <ToastContainer
         position="top-center"
