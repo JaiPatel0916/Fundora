@@ -107,6 +107,7 @@ const FormWrapper = styled.div`
     width: 100%;
     display: flex;
     justify-content: center;
+    padding-top: 50px
 `;
 
 const FormMain = styled.div`
