@@ -327,6 +327,7 @@ const DetailWrapper = styled.div`
   justify-content: space-between;
   padding: 20px;
   width: 98%;
+    padding-top: 80px;
 `;
 const LeftContainer = styled.div`
   width: 45%;
@@ -338,6 +339,7 @@ const ImageSection = styled.div`
   width: 100%;
   position: relative;
   height: 350px;
+  
 `;
 const Text = styled.p`
   font-family: "Roboto";
@@ -358,6 +360,7 @@ const DonateSection = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-top: 10px;
+  padding-top: 30px;
 `;
 const Input = styled.input`
   padding: 10px 20px;
