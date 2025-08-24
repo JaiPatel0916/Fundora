@@ -98,14 +98,12 @@ export default function Dashboard() {
   )
 }
 
-
-
-
 const HomeWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+    padding-top: 50px;
 `
 const CardsWrapper = styled.div`
   display: flex;
