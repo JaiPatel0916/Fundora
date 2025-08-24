@@ -21,6 +21,11 @@ const HeaderNav = () => {
       <Link href="/dashboard" passHref legacyBehavior>
         <StyledLink $active={Router.pathname === "/dashboard"}>Dashboard</StyledLink>
       </Link>
+
+      {/* About Us Link */}
+      <Link href="/about" passHref legacyBehavior>
+        <StyledLink $active={Router.pathname === "/about"}>About Us</StyledLink>
+      </Link>
     </HeaderNavWrapper>
   );
 };
@@ -62,11 +67,11 @@ const StyledLink = styled.a`
       color: ${theme.mode === 'dark' ? '#ffc265' : '#0056d6'};
       border-color: ${theme.mode === 'dark' ? '#ffc26566' : '#0056d655'};
       background: ${theme.mode === 'dark'
-      ? 'rgba(255, 194, 101, 0.1)'
-      : 'rgba(0, 86, 214, 0.08)'};
+        ? 'rgba(255, 194, 101, 0.1)'
+        : 'rgba(0, 86, 214, 0.08)'};
       box-shadow: 0 0 12px ${theme.mode === 'dark'
-      ? 'rgba(255, 194, 101, 0.3)'
-      : 'rgba(0, 86, 214, 0.2)'};
+        ? 'rgba(255, 194, 101, 0.3)'
+        : 'rgba(0, 86, 214, 0.2)'};
     `}
 
   &:hover {
@@ -74,17 +79,16 @@ const StyledLink = styled.a`
     color: ${(props) => props.theme.mode === 'dark' ? '#ffc265' : '#0056d6'};
     border-color: ${(props) => props.theme.mode === 'dark' ? '#ffc265' : '#0056d6'};
     background: ${(props) => props.theme.mode === 'dark'
-    ? 'rgba(255, 194, 101, 0.15)'
-    : 'rgba(0, 86, 214, 0.1)'};
+      ? 'rgba(255, 194, 101, 0.15)'
+      : 'rgba(0, 86, 214, 0.1)'};
     box-shadow: 0 0 14px ${(props) => props.theme.mode === 'dark'
-    ? 'rgba(255, 194, 101, 0.25)'
-    : 'rgba(0, 86, 214, 0.25)'};
+      ? 'rgba(255, 194, 101, 0.25)'
+      : 'rgba(0, 86, 214, 0.25)'};
   }
 
   &:active {
     transform: scale(0.97);
   }
 `;
-
 
 export default HeaderNav;

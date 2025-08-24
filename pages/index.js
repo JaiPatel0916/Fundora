@@ -9,15 +9,13 @@ import CampaignFactory from '../artifacts/contracts/Campaign.sol/CampaignFactory
 import { useState } from 'react';
 import Link from 'next/link';
 import Footer from '../components/layout/Footer';
-import Quote from '../components/Form/Components/Quote';
 import { motion } from 'framer-motion';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/router';
-import VideoHero from '../components/Form/Components/VideoHero';
 import FAQSection from '../components/Form/Components/FAQSection';
+import Landing from "./landing";
 
-
-export default function Index({ AllData, HealthData, EducationData, AnimalData }) {
+export default function Home({ AllData, HealthData, EducationData, AnimalData }) {
   const [filter, setFilter] = useState(AllData);
   const router = useRouter();
 
@@ -26,98 +24,71 @@ export default function Index({ AllData, HealthData, EducationData, AnimalData }
       position: "top-center",
       theme: "dark"
     });
-
     try {
       await router.push(`/${address}`);
     } finally {
-      toast.dismiss(id); // toast hata de
+      toast.dismiss(id);
     }
   };
 
   return (
-    <HomeWrapper>
-      
-      <Quote />
-     
-      <SectionTitle>Popular Campaigns</SectionTitle>
+    <>
+      <Landing />  {/* ✅ landing hero */}
 
-      {/* Filter Section */}
-      <FilterWrapper>
-        <FilterAltIcon style={{ fontSize: 40 }} />
-        <Category onClick={() => setFilter(AllData)}>All</Category>
-        <Category onClick={() => setFilter(HealthData)}>Health</Category>
-        <Category onClick={() => setFilter(EducationData)}>Education</Category>
-        <Category onClick={() => setFilter(AnimalData)}>Animal</Category>
-      </FilterWrapper>
-     
+      <HomeWrapper>
+        <SectionTitle>Popular Campaigns</SectionTitle>
+        
+        {/* Filters */}
+        <FilterWrapper>
+          <FilterAltIcon style={{ fontSize: 40 }} />
+          <Category onClick={() => setFilter(AllData)}>All</Category>
+          <Category onClick={() => setFilter(HealthData)}>Health</Category>
+          <Category onClick={() => setFilter(EducationData)}>Education</Category>
+          <Category onClick={() => setFilter(AnimalData)}>Animal</Category>
+        </FilterWrapper>
 
-      {/* Cards Container */}
-      <CardsWrapper>
-        {filter.map((e) => (
-          <Card key={e.title}>
-            <CardImg>
-              <Image
-                alt="Crowdfunding dapp"
-                src={e.image ? `https://ipfs.infura.io/ipfs/${e.image}` : "/default-image.jpg"}
-                layout="fill"
-                objectFit="cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Added this line
-                priority // If the image is above the fold
-              />
+        {/* Cards */}
+        <CardsWrapper>
+          {filter.map((e) => (
+            <Card key={e.title}>
+              <CardImg>
+                <Image
+                  alt="Crowdfunding dapp"
+                  src={e.image ? `https://ipfs.infura.io/ipfs/${e.image}` : "/default-image.jpg"}
+                  layout="fill"
+                  objectFit="cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                />
+              </CardImg>
+              <Title>{e.title}</Title>
+              <CardData>
+                <Text>Owner<AccountBoxIcon /></Text>
+                <Text>{e.owner.slice(0, 6)}...{e.owner.slice(-4)}</Text>
+              </CardData>
+              <CardData>
+                <Text>Amount<PaidIcon /></Text>
+                <Text>{e.amount} Matic</Text>
+              </CardData>
+              <CardData>
+                <Text><EventIcon /></Text>
+                <Text suppressHydrationWarning>
+                  {new Date(e.timeStamp * 1000).toLocaleString()}
+                </Text>
+              </CardData>
+              <Button onClick={() => handleGoToCampaign(e.address)}>
+                Go to Campaign
+              </Button>
+            </Card>
+          ))}
+        </CardsWrapper>
 
-            </CardImg>
-            <Title>{e.title}</Title>
-            <CardData>
-              <Text>Owner<AccountBoxIcon /></Text>
-              <Text>{e.owner.slice(0, 6)}...{e.owner.slice(-4)}</Text>
-            </CardData>
-            <CardData>
-              <Text>Amount<PaidIcon /></Text>
-              <Text>{e.amount} Matic</Text>
-            </CardData>
-            <CardData>
-              <Text><EventIcon /></Text>
-              <Text suppressHydrationWarning>{new Date(e.timeStamp * 1000).toLocaleString()}</Text>
-            </CardData>
-            <Button onClick={() => handleGoToCampaign(e.address)}>
-              Go to Campaign
-            </Button>
-
-          </Card>
-        ))}
-      </CardsWrapper>
-      <VideoHero />
-      <FAQSection />
-    
-
-      <Footer />
-      <ToastContainer
-        position="top-center"
-        autoClose={2000}
-        hideProgressBar={true}
-        newestOnTop={true}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable
-        pauseOnHover
-        toastStyle={{
-          background: 'rgba(0, 0, 0, 0.75)',
-          color: '#00FFE0',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          borderRadius: '12px',
-          textAlign: 'center',
-          boxShadow: '0 0 15px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255,0,200,0.4)',
-          backdropFilter: 'blur(10px)',
-        }}
-      />
-
-
-    </HomeWrapper>
-   
+        {/* ✅ Only FAQ + Footer kept */}
+        <FAQSection />
+        <Footer />
+      </HomeWrapper>
+    </>
   );
-  
 }
 
 
