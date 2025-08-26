@@ -126,7 +126,7 @@ const Home = () => {
             </button>
           </Link>
 
-          <Link href="/campaigns">
+          <Link href="/">
             <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:scale-105">
               Explore Projects
             </button>
