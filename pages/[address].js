@@ -82,10 +82,6 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
       }
 
       const parsedAmount = ethers.utils.parseEther(amount);
-
-      // Optional: show logs
-      console.log("Parsed amount:", parsedAmount.toString());
-
       const received = await contract.receivedAmount();
       const required = await contract.requiredAmount();
 
