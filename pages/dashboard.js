@@ -9,9 +9,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Footer from '../components/layout/Footer';
 
-/* =======================
-   IPFS helpers (fallback)
-   ======================= */
 const IPFS_GATEWAYS = [
   'https://ipfs.io/ipfs/',
   'https://cloudflare-ipfs.com/ipfs/',
@@ -81,7 +78,7 @@ export default function Dashboard() {
 
   return (
     <Page>
-      {/* Main grows, footer sticks to bottom */}
+      
       <Main>
         <Header>
           <Heading>Welcome to your Dashboard</Heading>
