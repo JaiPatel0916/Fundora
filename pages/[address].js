@@ -6,6 +6,21 @@ import Campaign from '../artifacts/contracts/Campaign.sol/Campaign.json';
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+// TOP OF FILE, before `export default function Detail...`
+const IPFS_GATEWAYS = [
+  "https://ipfs.io/ipfs/",
+  "https://cloudflare-ipfs.com/ipfs/",
+  "https://gateway.pinata.cloud/ipfs/",
+];
+
+function toCid(val = "") {
+  if (!val) return "";
+  if (val.startsWith("ipfs://")) return val.replace("ipfs://", "");
+  const m = val.match(/\/ipfs\/([^/?#]+)/);
+  return m ? m[1] : val; // fall back to raw CID
+}
+
+
 export default function Detail({ Data = {}, DonationsData = [] }) {
   const [mydonations, setMydonations] = useState([]);
   const [story, setStory] = useState('');
@@ -15,6 +30,11 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
   const [newFeedback, setNewFeedback] = useState('');
   const [userAddress, setUserAddress] = useState('');
   const [isOwner, setIsOwner] = useState(false);  // Track if the user is the owner
+
+  // ADD THESE LINES inside the component (above `return`)
+  const [gw, setGw] = useState(0);                           // which gateway index
+  const cid = toCid(Data?.image);                            // normalize whatever you stored
+  const imgSrc = cid ? `${IPFS_GATEWAYS[gw]}${cid}` : "/default-image.jpg"; // current URL
 
   const fetchFeedbacks = async () => {
     if (!Data.address) return;
@@ -47,9 +67,43 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
       const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL);
       const contract = new ethers.Contract(Data.address, Campaign.abi, provider);
 
-      const response = await fetch(`https://crowdfunding.infura-ipfs.io/ipfs/${Data.storyUrl}`);
-      const data = await response.text();
-      setStory(data);
+      // const response = await fetch(`https://crowdfunding.infura-ipfs.io/ipfs/${Data.storyUrl}`);
+      // const data = await response.text();
+      // setStory(data);
+
+      // Fetch story from public gateways with fallback
+      const storyCid = toCid(Data.storyUrl);
+      let storyText = "";
+
+      if (storyCid) {
+        for (const base of IPFS_GATEWAYS) {
+          try {
+            const res = await fetch(`${base}${storyCid}`, { cache: "no-store" });
+            if (!res.ok) continue;
+
+            const ct = res.headers.get("content-type") || "";
+            // support plain text or JSON stories
+            if (ct.includes("application/json")) {
+              const json = await res.json();
+              storyText = JSON.stringify(json, null, 2);
+            } else {
+              storyText = await res.text();
+            }
+
+            // guard against Infura error pages or empty text
+            if (storyText && !/infura\.io\/dashboard/i.test(storyText)) {
+              break; // we got a good story
+            } else {
+              storyText = "";
+            }
+          } catch (_) {
+            // try next gateway
+          }
+        }
+      }
+
+      setStory(storyText || "Story not available right now. Please try again later.");
+
 
       const MyDonations = contract.filters.donated(Address);
       const MyAllDonations = await contract.queryFilter(MyDonations);
@@ -110,16 +164,14 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
       toast.error('⚠ Donation failed or cancelled.');
     }
   };
+
   const submitFeedback = async () => {
     if (!newFeedback.trim()) {
-      return alert("Feedback can't be empty.");
+      toast.error("Feedback can't be empty.");
+      return;
     }
 
-    console.log("Sending feedback:", {
-      campaignAddress: Data.address,
-      userAddress,
-      message: newFeedback,
-    });
+    const toastId = toast.loading('Submitting feedback...');
 
     try {
       const res = await fetch("/api/feedback/submit", {
@@ -135,15 +187,17 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
       const result = await res.json();
 
       if (result.success) {
-        alert("✅ Feedback submitted!");
+        // Update UI
         setFeedbacks([result.feedback, ...feedbacks]);
         setNewFeedback('');
+
+        toast.success('✅ Feedback submitted successfully!', { id: toastId });
       } else {
-        throw new Error(result.message || "Unknown error from server.");
+        toast.error(result.message || 'Failed to submit feedback.', { id: toastId });
       }
     } catch (err) {
-      alert("❌ Error submitting feedback.");
       console.error("Feedback submission error:", err);
+      toast.error('❌ Error submitting feedback.', { id: toastId });
     }
   };
 
@@ -153,11 +207,24 @@ export default function Detail({ Data = {}, DonationsData = [] }) {
         <ImageSection>
           <Image
             alt="crowdfunding dapp"
-            layout="fill"
-            src={`https://crowdfunding.infura-ipfs.io/ipfs/${Data.image}`}
+            src={imgSrc}
+            fill                
+            unoptimized         
+            onError={() => gw < IPFS_GATEWAYS.length - 1 && setGw(gw + 1)} // try next gateway
+            style={{ objectFit: "cover" }}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
           />
+
         </ImageSection>
-        <Text>{story}</Text>
+        <Text
+    as="pre"
+    style={{
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+    }}
+  >
+    {story}
+  </Text>
       </LeftContainer>
 
       <RightContainer>
@@ -334,7 +401,7 @@ const RightContainer = styled.div`
 const ImageSection = styled.div`
   width: 100%;
   position: relative;
-  height: 350px;
+  height: 500px;
   
 `;
 const Text = styled.p`

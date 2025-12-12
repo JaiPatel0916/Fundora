@@ -71,7 +71,7 @@ export default function About() {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold mb-4">Why Choose FUNDORA?</h2>
+          <h2 className="text-3xl font-bold mb-4">Why Choose FUNDORA ?</h2>
           <p className="text-gray-300 mb-10">Built with cutting-edge technology for the future of funding</p>
 
           <div className="grid md:grid-cols-4 gap-6">
