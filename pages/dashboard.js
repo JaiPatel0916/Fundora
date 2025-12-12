@@ -92,9 +92,7 @@ export default function Dashboard() {
                 <CampaignImage cid={e.image} />
               </CardImg>
 
-              {/* Content area */}
-              <CardBody>
-                <Title>{e.title}</Title>
+
 
                 <CardRow>
                   <Text>
